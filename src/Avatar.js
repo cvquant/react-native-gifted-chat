@@ -1,44 +1,69 @@
+/* eslint no-use-before-define: ["error", { "variables": false }] */
+
+import PropTypes from 'prop-types';
 import React from 'react';
-import {
-  Image,
-  StyleSheet,
-  View,
-} from 'react-native';
-
+import { StyleSheet, View, ViewPropTypes } from 'react-native';
 import GiftedAvatar from './GiftedAvatar';
-
 import { isSameUser, isSameDay, warnDeprecated } from './utils';
 
 export default class Avatar extends React.Component {
+
   renderAvatar() {
     if (this.props.renderAvatar) {
-      const {renderAvatar, ...avatarProps} = this.props;
+      const { renderAvatar, ...avatarProps } = this.props;
       return this.props.renderAvatar(avatarProps);
     }
     return (
       <GiftedAvatar
-        avatarStyle={StyleSheet.flatten([styles[this.props.position].image, this.props.imageStyle[this.props.position]])}
+        avatarStyle={StyleSheet.flatten([
+          styles[this.props.position].image,
+          this.props.imageStyle[this.props.position],
+        ])}
         user={this.props.currentMessage.user}
+        onPress={() => this.props.onPressAvatar && this.props.onPressAvatar(this.props.currentMessage.user)}
       />
     );
   }
 
   render() {
-    if (isSameUser(this.props.currentMessage, this.props.nextMessage) && isSameDay(this.props.currentMessage, this.props.nextMessage)) {
+    const { renderAvatarOnTop, showAvatarForEveryMessage } = this.props;
+    const messageToCompare = renderAvatarOnTop ? this.props.previousMessage : this.props.nextMessage;
+    const computedStyle = renderAvatarOnTop ? 'onTop' : 'onBottom';
+
+    if (this.props.renderAvatar === null) {
+      return null;
+    }
+
+    if (
+      !showAvatarForEveryMessage &&
+      isSameUser(this.props.currentMessage, messageToCompare) &&
+      isSameDay(this.props.currentMessage, messageToCompare)
+    ) {
       return (
         <View style={[styles[this.props.position].container, this.props.containerStyle[this.props.position]]}>
           <GiftedAvatar
-            avatarStyle={StyleSheet.flatten([styles[this.props.position].image, this.props.imageStyle[this.props.position]])}
+            avatarStyle={StyleSheet.flatten([
+              styles[this.props.position].image,
+              this.props.imageStyle[this.props.position],
+            ])}
           />
         </View>
       );
     }
+
     return (
-      <View style={[styles[this.props.position].container, this.props.containerStyle[this.props.position]]}>
+      <View
+        style={[
+          styles[this.props.position].container,
+          styles[this.props.position][computedStyle],
+          this.props.containerStyle[this.props.position],
+        ]}
+      >
         {this.renderAvatar()}
       </View>
     );
   }
+
 }
 
 const styles = {
@@ -46,6 +71,10 @@ const styles = {
     container: {
       marginRight: 8,
     },
+    onTop: {
+      alignSelf: 'flex-start',
+    },
+    onBottom: {},
     image: {
       height: 36,
       width: 36,
@@ -56,6 +85,10 @@ const styles = {
     container: {
       marginLeft: 8,
     },
+    onTop: {
+      alignSelf: 'flex-start',
+    },
+    onBottom: {},
     image: {
       height: 36,
       width: 36,
@@ -65,31 +98,40 @@ const styles = {
 };
 
 Avatar.defaultProps = {
+  renderAvatarOnTop: false,
+  showAvatarForEveryMessage: false,
   position: 'left',
   currentMessage: {
     user: null,
   },
+  previousMessage: {},
   nextMessage: {},
   containerStyle: {},
   imageStyle: {},
-  //TODO: remove in next major release
+  onPressAvatar: () => {},
+  // TODO: remove in next major release
   isSameDay: warnDeprecated(isSameDay),
-  isSameUser: warnDeprecated(isSameUser)
+  isSameUser: warnDeprecated(isSameUser),
 };
 
 Avatar.propTypes = {
-  position: React.PropTypes.oneOf(['left', 'right']),
-  currentMessage: React.PropTypes.object,
-  nextMessage: React.PropTypes.object,
-  containerStyle: React.PropTypes.shape({
-    left: View.propTypes.style,
-    right: View.propTypes.style,
+  renderAvatarOnTop: PropTypes.bool,
+  showAvatarForEveryMessage: PropTypes.bool,
+  position: PropTypes.oneOf(['left', 'right']),
+  currentMessage: PropTypes.object,
+  previousMessage: PropTypes.object,
+  nextMessage: PropTypes.object,
+  onPressAvatar: PropTypes.func,
+  renderAvatar: PropTypes.func,
+  containerStyle: PropTypes.shape({
+    left: ViewPropTypes.style,
+    right: ViewPropTypes.style,
   }),
-  imageStyle: React.PropTypes.shape({
-    left: View.propTypes.style,
-    right: View.propTypes.style,
+  imageStyle: PropTypes.shape({
+    left: ViewPropTypes.style,
+    right: ViewPropTypes.style,
   }),
-  //TODO: remove in next major release
-  isSameDay: React.PropTypes.func,
-  isSameUser: React.PropTypes.func
+  // TODO: remove in next major release
+  isSameDay: PropTypes.func,
+  isSameUser: PropTypes.func,
 };
