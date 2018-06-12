@@ -12,7 +12,7 @@ import Communications from 'react-native-communications';
 export default class MessageText extends React.Component {
   constructor(props) {
     super(props);
-    this.onUrlPress = this.onUrlPress.bind(this);
+    this.onUrlPress = this.props.onUrlPress ? this.props.onUrlPress : this.onUrlPress.bind(this);
     this.onPhonePress = this.onPhonePress.bind(this);
     this.onEmailPress = this.onEmailPress.bind(this);
   }
@@ -57,6 +57,10 @@ export default class MessageText extends React.Component {
             {type: 'url', style: StyleSheet.flatten([styles[this.props.position].link, this.props.linkStyle[this.props.position]]), onPress: this.onUrlPress},
             {type: 'phone', style: StyleSheet.flatten([styles[this.props.position].link, this.props.linkStyle[this.props.position]]), onPress: this.onPhonePress},
             {type: 'email', style: StyleSheet.flatten([styles[this.props.position].link, this.props.linkStyle[this.props.position]]), onPress: this.onEmailPress},
+            ...this.props.customParseAddons.map((customParseItem) => ({
+              ...customParseItem,
+              style: StyleSheet.flatten([styles[this.props.position].link, this.props.linkStyle[this.props.position]]),
+            })),
           ]}
         >
           {this.props.currentMessage.text}
@@ -114,6 +118,7 @@ MessageText.defaultProps = {
   containerStyle: {},
   textStyle: {},
   linkStyle: {},
+  customParseAddons: [],
 };
 
 MessageText.propTypes = {
@@ -131,4 +136,6 @@ MessageText.propTypes = {
     left: Text.propTypes.style,
     right: Text.propTypes.style,
   }),
+  onUrlPress: React.PropTypes.func,
+  customParseAddons: ParsedText.propTypes.parse,
 };
