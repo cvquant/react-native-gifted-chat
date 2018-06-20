@@ -166,7 +166,7 @@ MessageText.propTypes = {
     left: Text.propTypes.style,
     right: Text.propTypes.style,
   }),
-  onUrlPress: React.PropTypes.func,
+  onUrlPress: PropTypes.func,
   customParseAddons: ParsedText.propTypes.parse,
   parsePatterns: PropTypes.func,
   textProps: PropTypes.object,
